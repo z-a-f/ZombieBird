@@ -7,11 +7,10 @@ public class ScrollHandler {
 
 	private Grass frontGrass, backGrass;
 	private Pipe pipe1, pipe2, pipe3;
-
-	private GameWorld gameWorld;
-
 	public static final int SCROLL_SPEED = -59;
 	public static final int PIPE_GAP = 49;
+
+	private GameWorld gameWorld;
 
 	public ScrollHandler(GameWorld gameWorld, float yPos) {
 		this.gameWorld = gameWorld;
@@ -24,6 +23,22 @@ public class ScrollHandler {
 				yPos);
 		pipe3 = new Pipe(pipe2.getTailX() + PIPE_GAP, 0, 22, 60, SCROLL_SPEED,
 				yPos);
+	}
+
+	public void updateReady(float delta) {
+
+		frontGrass.update(delta);
+		backGrass.update(delta);
+
+		// Same with grass
+		if (frontGrass.isScrolledLeft()) {
+			frontGrass.reset(backGrass.getTailX());
+
+		} else if (backGrass.isScrolledLeft()) {
+			backGrass.reset(frontGrass.getTailX());
+
+		}
+
 	}
 
 	public void update(float delta) {
@@ -51,6 +66,7 @@ public class ScrollHandler {
 
 		} else if (backGrass.isScrolledLeft()) {
 			backGrass.reset(frontGrass.getTailX());
+
 		}
 	}
 
@@ -83,17 +99,11 @@ public class ScrollHandler {
 			addScore(1);
 			pipe3.setScored(true);
 			AssetLoader.coin.play();
+
 		}
+
 		return (pipe1.collides(bird) || pipe2.collides(bird) || pipe3
 				.collides(bird));
-	}
-
-	public void onRestart() {
-		frontGrass.onRestart(0, SCROLL_SPEED);
-		backGrass.onRestart(frontGrass.getTailX(), SCROLL_SPEED);
-		pipe1.onRestart(210, SCROLL_SPEED);
-		pipe2.onRestart(pipe1.getTailX() + PIPE_GAP, SCROLL_SPEED);
-		pipe3.onRestart(pipe2.getTailX() + PIPE_GAP, SCROLL_SPEED);
 	}
 
 	private void addScore(int increment) {
@@ -118,6 +128,14 @@ public class ScrollHandler {
 
 	public Pipe getPipe3() {
 		return pipe3;
+	}
+
+	public void onRestart() {
+		frontGrass.onRestart(0, SCROLL_SPEED);
+		backGrass.onRestart(frontGrass.getTailX(), SCROLL_SPEED);
+		pipe1.onRestart(210, SCROLL_SPEED);
+		pipe2.onRestart(pipe1.getTailX() + PIPE_GAP, SCROLL_SPEED);
+		pipe3.onRestart(pipe2.getTailX() + PIPE_GAP, SCROLL_SPEED);
 	}
 
 }

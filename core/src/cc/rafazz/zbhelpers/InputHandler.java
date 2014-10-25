@@ -1,77 +1,136 @@
 package cc.rafazz.zbhelpers;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import cc.rafazz.gameobjects.Bird;
 import cc.rafazz.gameworld.GameWorld;
+import cc.rafazz.ui.SimpleButton;
 
+import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.InputProcessor;
 
 public class InputHandler implements InputProcessor {
+    private Bird myBird;
+    private GameWorld myWorld;
 
-	private Bird myBird;
-	private GameWorld myWorld;
+    private List<SimpleButton> menuButtons;
 
-	public InputHandler(GameWorld myWorld) {
-		// myBird now represents the gameWorld's bird.
-		this.myWorld = myWorld;
-		myBird = myWorld.getBird();
-	}
+    private SimpleButton playButton;
 
-	@Override
-	public boolean keyDown(int keycode) {
-		// TODO Auto-generated method stub
-		return false;
-	}
+    private float scaleFactorX;
+    private float scaleFactorY;
 
-	@Override
-	public boolean keyUp(int keycode) {
-		// TODO Auto-generated method stub
-		return false;
-	}
+    public InputHandler(GameWorld myWorld, float scaleFactorX,
+            float scaleFactorY) {
+        this.myWorld = myWorld;
+        myBird = myWorld.getBird();
 
-	@Override
-	public boolean keyTyped(char character) {
-		// TODO Auto-generated method stub
-		return false;
-	}
+        int midPointY = myWorld.getMidPointY();
 
-	@Override
-	public boolean touchDown(int screenX, int screenY, int pointer, int button) {
-		if (myWorld.isReady()) {
+        this.scaleFactorX = scaleFactorX;
+        this.scaleFactorY = scaleFactorY;
+
+        menuButtons = new ArrayList<SimpleButton>();
+        playButton = new SimpleButton(
+                136 / 2 - (AssetLoader.playButtonUp.getRegionWidth() / 2),
+                midPointY + 50, 29, 16, AssetLoader.playButtonUp,
+                AssetLoader.playButtonDown);
+        menuButtons.add(playButton);
+    }
+
+    @Override
+    public boolean touchDown(int screenX, int screenY, int pointer, int button) {
+        screenX = scaleX(screenX);
+        screenY = scaleY(screenY);
+        System.out.println(screenX + " " + screenY);
+        if (myWorld.isMenu()) {
+            playButton.isTouchDown(screenX, screenY);
+        } else if (myWorld.isReady()) {
             myWorld.start();
         }
 
         myBird.onClick();
 
         if (myWorld.isGameOver() || myWorld.isHighScore()) {
-            // Reset all variables, go to GameState.READ
             myWorld.restart();
         }
 
         return true;
-	}
+    }
 
-	@Override
-	public boolean touchUp(int screenX, int screenY, int pointer, int button) {
-		// TODO Auto-generated method stub
-		return false;
-	}
+    @Override
+    public boolean touchUp(int screenX, int screenY, int pointer, int button) {
+        screenX = scaleX(screenX);
+        screenY = scaleY(screenY);
 
-	@Override
-	public boolean touchDragged(int screenX, int screenY, int pointer) {
-		// TODO Auto-generated method stub
-		return false;
-	}
+        if (myWorld.isMenu()) {
+            if (playButton.isTouchUp(screenX, screenY)) {
+                myWorld.ready();
+                return true;
+            }
+        }
 
-	@Override
-	public boolean mouseMoved(int screenX, int screenY) {
-		// TODO Auto-generated method stub
-		return false;
-	}
+        return false;
+    }
 
-	@Override
-	public boolean scrolled(int amount) {
-		// TODO Auto-generated method stub
-		return false;
-	}
+    @Override
+    public boolean keyDown(int keycode) {
 
+        // Can now use Space Bar to play the game
+        if (keycode == Keys.SPACE) {
+
+            if (myWorld.isMenu()) {
+                myWorld.ready();
+            } else if (myWorld.isReady()) {
+                myWorld.start();
+            }
+
+            myBird.onClick();
+
+            if (myWorld.isGameOver() || myWorld.isHighScore()) {
+                myWorld.restart();
+            }
+
+        }
+
+        return false;
+    }
+
+    @Override
+    public boolean keyUp(int keycode) {
+        return false;
+    }
+
+    @Override
+    public boolean keyTyped(char character) {
+        return false;
+    }
+
+    @Override
+    public boolean touchDragged(int screenX, int screenY, int pointer) {
+        return false;
+    }
+
+    @Override
+    public boolean mouseMoved(int screenX, int screenY) {
+        return false;
+    }
+
+    @Override
+    public boolean scrolled(int amount) {
+        return false;
+    }
+
+    private int scaleX(int screenX) {
+        return (int) (screenX / scaleFactorX);
+    }
+
+    private int scaleY(int screenY) {
+        return (int) (screenY / scaleFactorY);
+    }
+
+    public List<SimpleButton> getMenuButtons() {
+        return menuButtons;
+    }
 }

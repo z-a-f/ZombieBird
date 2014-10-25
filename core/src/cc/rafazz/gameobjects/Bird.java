@@ -11,22 +11,24 @@ public class Bird {
 	private Vector2 velocity;
 	private Vector2 acceleration;
 
-	private float rotation; // For handling bird rotation
+	private float rotation;
 	private int width;
-	private int height;
+	private float height;
 
-	private Circle boundingCircle;
+	private float originalY;
 
 	private boolean isAlive;
+
+	private Circle boundingCircle;
 
 	public Bird(float x, float y, int width, int height) {
 		this.width = width;
 		this.height = height;
+		this.originalY = y;
 		position = new Vector2(x, y);
 		velocity = new Vector2(0, 0);
 		acceleration = new Vector2(0, 460);
 		boundingCircle = new Circle();
-
 		isAlive = true;
 	}
 
@@ -46,7 +48,8 @@ public class Bird {
 
 		position.add(velocity.cpy().scl(delta));
 
-		// Offset the circle with respect to the bird:
+		// Set the circle's center to be (9, 6) with respect to the bird.
+		// Set the circle's radius to be 6.5f;
 		boundingCircle.set(position.x + 9, position.y + 6, 6.5f);
 
 		// Rotate counterclockwise
@@ -64,6 +67,27 @@ public class Bird {
 			if (rotation > 90) {
 				rotation = 90;
 			}
+
+		}
+
+	}
+
+	public void updateReady(float runTime) {
+		position.y = 2 * (float) Math.sin(7 * runTime) + originalY;
+	}
+
+	public boolean isFalling() {
+		return velocity.y > 110;
+	}
+
+	public boolean shouldntFlap() {
+		return velocity.y > 70 || !isAlive;
+	}
+
+	public void onClick() {
+		if (isAlive) {
+			AssetLoader.flap.play();
+			velocity.y = -140;
 		}
 	}
 
@@ -73,15 +97,7 @@ public class Bird {
 	}
 
 	public void decelerate() {
-		// If dead - do not accelerate downwards
 		acceleration.y = 0;
-	}
-
-	public void onClick() {
-		if (isAlive) {
-			velocity.y = -140;
-			AssetLoader.flap.play();
-		}
 	}
 
 	public void onRestart(int y) {
@@ -92,18 +108,6 @@ public class Bird {
 		acceleration.x = 0;
 		acceleration.y = 460;
 		isAlive = true;
-	}
-
-	public boolean isAlive() {
-		return isAlive;
-	}
-
-	public boolean isFalling() {
-		return velocity.y > 110;
-	}
-
-	public boolean shouldntFlap() {
-		return velocity.y > 70 || !isAlive;
 	}
 
 	public float getX() {
@@ -129,4 +133,9 @@ public class Bird {
 	public Circle getBoundingCircle() {
 		return boundingCircle;
 	}
+
+	public boolean isAlive() {
+		return isAlive;
+	}
+
 }

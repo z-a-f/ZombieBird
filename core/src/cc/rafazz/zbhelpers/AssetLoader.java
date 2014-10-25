@@ -24,7 +24,7 @@ public class AssetLoader {
 		logoTexture = new Texture(Gdx.files.internal("data/logo.png"));
 		logoTexture.setFilter(TextureFilter.Linear, TextureFilter.Linear);
 
-		logo = new TextureRegion(logoTexture, 0, 0, 512, 114);
+		logo = new TextureRegion(logoTexture, 0, 0, 512, 128);
 
 		texture = new Texture(Gdx.files.internal("data/texture.png"));
 		texture.setFilter(TextureFilter.Nearest, TextureFilter.Nearest);

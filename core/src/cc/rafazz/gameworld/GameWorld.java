@@ -8,118 +8,134 @@ import com.badlogic.gdx.math.Intersector;
 import com.badlogic.gdx.math.Rectangle;
 
 public class GameWorld {
-	public enum GameState {
-		READY, RUNNING, GAMEOVER, HIGHSCORE
-	}
 
-	private GameState currentState;
+    private Bird bird;
+    private ScrollHandler scroller;
+    private Rectangle ground;
+    private int score = 0;
+    private float runTime = 0;
+    private int midPointY;
 
-	private Bird bird;
-	private ScrollHandler scroller;
+    private GameState currentState;
 
-	private Rectangle ground;
+    public enum GameState {
+        MENU, READY, RUNNING, GAMEOVER, HIGHSCORE
+    }
 
-	private int score = 0;
-	public int midPointY;
+    public GameWorld(int midPointY) {
+        currentState = GameState.MENU;
+        this.midPointY = midPointY;
+        bird = new Bird(33, midPointY - 5, 17, 12);
+        // The grass should start 66 pixels below the midPointY
+        scroller = new ScrollHandler(this, midPointY + 66);
+        ground = new Rectangle(0, midPointY + 66, 137, 11);
+    }
 
-	// World constructor:
-	public GameWorld(int midPointY) {
-		// The bird will be initialized here
-		bird = new Bird(33, midPointY - 5, 17, 12);
-		// The grass should start 66 pixels below the midPointY
-		scroller = new ScrollHandler(this, midPointY + 66);
+    public void update(float delta) {
+        runTime += delta;
 
-		ground = new Rectangle(0, midPointY + 66, 136, 11);
+        switch (currentState) {
+        case READY:
+        case MENU:
+            updateReady(delta);
+            break;
 
-		currentState = GameState.READY;
-		this.midPointY = midPointY;
-	}
+        case RUNNING:
+            updateRunning(delta);
+            break;
+        default:
+            break;
+        }
 
-	public void update(float delta) {
-		switch (currentState) {
-		case READY:
-			updateReady(delta);
-			break;
-		case RUNNING:
-			updateRunning(delta);
-			break;
-		default:
-			break;
-		}
-	}
+    }
 
-	private void updateReady(float delta) {
+    private void updateReady(float delta) {
+        bird.updateReady(runTime);
+        scroller.updateReady(delta);
+    }
 
-	}
+    public void updateRunning(float delta) {
+        if (delta > .15f) {
+            delta = .15f;
+        }
 
-	private void updateRunning(float delta) {
-		// Add a delta cap so that if our game takes too long
-		// to update, we will not break our collision detection.
+        bird.update(delta);
+        scroller.update(delta);
 
-		if (delta > .15f) {
-			delta = .15f;
-		}
+        if (scroller.collides(bird) && bird.isAlive()) {
+            scroller.stop();
+            bird.die();
+            AssetLoader.dead.play();
+        }
 
-		bird.update(delta);
-		scroller.update(delta);
+        if (Intersector.overlaps(bird.getBoundingCircle(), ground)) {
+            scroller.stop();
+            bird.die();
+            bird.decelerate();
+            currentState = GameState.GAMEOVER;
 
-		if (scroller.collides(bird) && bird.isAlive()) {
-			scroller.stop();
-			bird.die();
-			AssetLoader.dead.play();
-		}
+            if (score > AssetLoader.getHighScore()) {
+                AssetLoader.setHighScore(score);
+                currentState = GameState.HIGHSCORE;
+            }
+        }
+    }
 
-		if (Intersector.overlaps(bird.getBoundingCircle(), ground)) {
-			scroller.stop();
-			bird.die();
-			bird.decelerate();
-			currentState = GameState.GAMEOVER;
-			
-			// Check if we are the highscoreres:
-			if (score > AssetLoader.getHighScore()) {
-				AssetLoader.setHighScore(score);
-				currentState = GameState.HIGHSCORE;
-			}
-		}
-	}
+    public Bird getBird() {
+        return bird;
 
-	public void start() {
-		currentState = GameState.RUNNING;
-	}
+    }
 
-	public void restart() {
-		currentState = GameState.READY;
-		score = 0;
-		bird.onRestart(midPointY - 5);
-		scroller.onRestart();
-		currentState = GameState.READY;
-	}
+    public int getMidPointY() {
+        return midPointY;
+    }
 
-	public Bird getBird() {
-		return bird;
-	}
+    public ScrollHandler getScroller() {
+        return scroller;
+    }
 
-	public ScrollHandler getScroller() {
-		return scroller;
-	}
+    public int getScore() {
+        return score;
+    }
 
-	public int getScore() {
-		return score;
-	}
+    public void addScore(int increment) {
+        score += increment;
+    }
 
-	public void addScore(int increment) {
-		score += increment;
-	}
+    public void start() {
+        currentState = GameState.RUNNING;
+    }
 
-	public boolean isReady() {
-		return currentState == GameState.READY;
-	}
-	
-	public boolean isGameOver() {
-		return currentState == GameState.GAMEOVER;
-	}
-	
-	public boolean isHighScore() {
-	    return currentState == GameState.HIGHSCORE;
-	}
+    public void ready() {
+        currentState = GameState.READY;
+    }
+
+    public void restart() {
+        currentState = GameState.READY;
+        score = 0;
+        bird.onRestart(midPointY - 5);
+        scroller.onRestart();
+        currentState = GameState.READY;
+    }
+
+    public boolean isReady() {
+        return currentState == GameState.READY;
+    }
+
+    public boolean isGameOver() {
+        return currentState == GameState.GAMEOVER;
+    }
+
+    public boolean isHighScore() {
+        return currentState == GameState.HIGHSCORE;
+    }
+
+    public boolean isMenu() {
+        return currentState == GameState.MENU;
+    }
+
+    public boolean isRunning() {
+        return currentState == GameState.RUNNING;
+    }
+
 }
