@@ -10,28 +10,32 @@ import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 
 public class AssetLoader {
-	// Preferences:
-	public static Preferences prefs;
-	
-	// Textures:
-	public static Texture texture;
-	public static TextureRegion bg, grass;
-	public static TextureRegion skullUp, skullDown, bar;
-	public static TextureRegion bird, birdDown, birdUp;
 
-	// Animation:
+	public static Texture texture, logoTexture;
+	public static TextureRegion logo, zbLogo, bg, grass, bird, birdDown,
+			birdUp, skullUp, skullDown, bar, playButtonUp, playButtonDown;
 	public static Animation birdAnimation;
-
-	// Sounds:
-	public static Sound dead, coin, flap;
-
-	// Fonts:
+	public static Sound dead, flap, coin;
 	public static BitmapFont font, shadow;
+	private static Preferences prefs;
 
 	public static void load() {
 
+		logoTexture = new Texture(Gdx.files.internal("data/logo.png"));
+		logoTexture.setFilter(TextureFilter.Linear, TextureFilter.Linear);
+
+		logo = new TextureRegion(logoTexture, 0, 0, 512, 114);
+
 		texture = new Texture(Gdx.files.internal("data/texture.png"));
 		texture.setFilter(TextureFilter.Nearest, TextureFilter.Nearest);
+
+		playButtonUp = new TextureRegion(texture, 0, 83, 29, 16);
+		playButtonDown = new TextureRegion(texture, 29, 83, 29, 16);
+		playButtonUp.flip(false, true);
+		playButtonDown.flip(false, true);
+
+		zbLogo = new TextureRegion(texture, 0, 55, 135, 24);
+		zbLogo.flip(false, true);
 
 		bg = new TextureRegion(texture, 0, 0, 136, 43);
 		bg.flip(false, true);
@@ -61,40 +65,42 @@ public class AssetLoader {
 		bar.flip(false, true);
 
 		dead = Gdx.audio.newSound(Gdx.files.internal("data/dead.wav"));
-		coin = Gdx.audio.newSound(Gdx.files.internal("data/coin.wav"));
 		flap = Gdx.audio.newSound(Gdx.files.internal("data/flap.wav"));
-		
-		// Load and scale the fonts:
+		coin = Gdx.audio.newSound(Gdx.files.internal("data/coin.wav"));
+
 		font = new BitmapFont(Gdx.files.internal("data/text.fnt"));
-		shadow = new BitmapFont(Gdx.files.internal("data/shadow.fnt"));
 		font.setScale(.25f, -.25f);
+		shadow = new BitmapFont(Gdx.files.internal("data/shadow.fnt"));
 		shadow.setScale(.25f, -.25f);
-		
-		// Load the preferences:
-		prefs = Gdx.app.getPreferences("cc.rafazz.ZB");
-		if(!prefs.contains("highScore")) {
+
+		// Create (or retrieve existing) preferences file
+		prefs = Gdx.app.getPreferences("ZombieBird");
+
+		if (!prefs.contains("highScore")) {
 			prefs.putInteger("highScore", 0);
 		}
+	}
+
+	public static void setHighScore(int val) {
+		prefs.putInteger("highScore", val);
+		prefs.flush();
+	}
+
+	public static int getHighScore() {
+		return prefs.getInteger("highScore");
 	}
 
 	public static void dispose() {
 		// We must dispose of the texture when we are finished.
 		texture.dispose();
+
+		// Dispose sounds
 		dead.dispose();
-		coin.dispose();
 		flap.dispose();
+		coin.dispose();
+
 		font.dispose();
 		shadow.dispose();
 	}
-	
-	// Receives an integer and maps it to the String highScore in prefs
-	public static void setHighScore(int val) {
-	    prefs.putInteger("highScore", val);
-	    prefs.flush();
-	}
 
-	// Retrieves the current high score
-	public static int getHighScore() {
-	    return prefs.getInteger("highScore");
-	}
 }
