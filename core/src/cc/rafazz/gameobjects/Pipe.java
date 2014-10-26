@@ -2,20 +2,29 @@ package cc.rafazz.gameobjects;
 
 import java.util.Random;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.math.Intersector;
 import com.badlogic.gdx.math.Rectangle;
 
 public class Pipe extends Scrollable {
 
 	private Random r;
-	private boolean scored = false;
 
 	private Rectangle skullUp, skullDown, barUp, barDown;
 
 	public static final int VERTICAL_GAP = 45;
 	public static final int SKULL_WIDTH = 24;
 	public static final int SKULL_HEIGHT = 11;
+	
+	private static final int X_UPDATE_RATIO = 10;
+	
 	private float groundY;
+	private boolean isScored = false;
+	
+	private boolean isMovable = false;	// This identifies if it is a movable one
+	private boolean movingUp = false;
+	private int updateX = 0;
+	private int xCounter = 0;
 
 	// When Pipe's constructor is invoked, invoke the super (Scrollable)
 	// constructor
@@ -28,7 +37,10 @@ public class Pipe extends Scrollable {
 		skullDown = new Rectangle();
 		barUp = new Rectangle();
 		barDown = new Rectangle();
-
+		
+		isMovable = r.nextBoolean();
+		movingUp = r.nextBoolean();
+		
 		this.groundY = groundY;
 	}
 
@@ -37,6 +49,26 @@ public class Pipe extends Scrollable {
 		// Call the update method in the superclass (Scrollable)
 		super.update(delta);
 
+		if (isMovable) {
+			// movingUp = (height <= 15);
+			// Gdx.app.log("Pipe", "Height: " + height + " movingUp: " + movingUp);
+			xCounter++;
+			if (movingUp) {
+				height += updateX;
+				movingUp = (height < 105);
+			} else {
+				height -= updateX;
+				movingUp = (height < 15); 
+			}
+			if (xCounter > X_UPDATE_RATIO) {
+				updateX = 1;
+				xCounter = 0;
+			} else {
+				updateX = 0;
+				xCounter++;
+			}
+		}
+		
 		// The set() method allows you to set the top left corner's x, y
 		// coordinates,
 		// along with the width and height of the rectangle
@@ -73,20 +105,14 @@ public class Pipe extends Scrollable {
 		super.reset(newX);
 		// Change the height to a random number
 		height = r.nextInt(90) + 15;
-		scored = false;
+		isScored = false;
+		isMovable = r.nextBoolean();
+		movingUp = r.nextBoolean();
 	}
 
 	public void onRestart(float x, float scrollSpeed) {
 		velocity.x = scrollSpeed;
 		reset(x);
-	}
-
-	public void setScored(boolean scored) {
-		this.scored = scored;
-	}
-
-	public boolean isScored() {
-		return scored;
 	}
 
 	public Rectangle getSkullUp() {
@@ -103,5 +129,13 @@ public class Pipe extends Scrollable {
 
 	public Rectangle getBarDown() {
 		return barDown;
+	}
+
+	public boolean isScored() {
+		return isScored;
+	}
+
+	public void setScored(boolean isScored) {
+		this.isScored = isScored;
 	}
 }

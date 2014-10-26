@@ -9,6 +9,8 @@ public class ScrollHandler {
 	private Pipe pipe1, pipe2, pipe3;
 	public static final int SCROLL_SPEED = -59;
 	public static final int PIPE_GAP = 49;
+	
+	public static final int Y_SPEED = 20;
 
 	private GameWorld gameWorld;
 
