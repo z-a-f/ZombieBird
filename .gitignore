@@ -1,3 +1,6 @@
+## Secret files (user ID's and stuff)
+secret.*
+
 ## Java
 
 *.class
